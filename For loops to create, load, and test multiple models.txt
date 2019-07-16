@@ -1,0 +1,29 @@
+#For loop to test multiple models and save best models with unique names
+
+Names = ['A','B','C','D','E','F','G']
+
+i = 0
+
+while i < len(Names):
+    checkpoint = [ModelCheckpoint(filepath='./models/'+str(Names[i])+'_model.h5', save_best_only=True, monitor='val_loss')]
+    history = model.fit(X_train, train_data[i], epochs=epochs, batch_size=batch_size, callbacks=checkpoint, validation_data=[X_dev,dev_data[i]])
+    i += 1
+
+#For loop to load multiple models, save them to the global environment with unique names and evaluate against a test set
+
+model_dict = {}
+
+i = 0
+
+while i <len(Names):
+    globals()[str(Names[i])+'_model']= load_model('./models/'+str(scales[i])+'_model.h5')
+    model_dict[str(Names[i])] = globals()[str(Names[i])+'_model']
+    i += 1
+    
+z = 0
+
+for key in model_dict:
+    globals()[str(key)+' model_checking'] = model_dict[key]
+    accr = globals()[str(key)+' model_checking'].evaluate(X_test, test_data[z])
+    print(str(Names[z])+' Test Set - Loss: {:0.3f} : Accuracy: {:0.3f}'.format(accr[0],accr[1]))
+    z += 1
